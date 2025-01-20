@@ -1,18 +1,69 @@
 ---
-# This one works!
-# - name: Update VLAN on the newly created VM
-#   community.general.proxmox_nic:
-#     api_host: "{{ proxmox_api_endpoint }}"
-#     api_token_id: "{{ proxmox_api_token_id }}"
-#     api_token_secret: "{{ proxmox_api_token_secret }}"
-#     api_user: "{{ proxmox_api_user }}"
-#     vmid: "{{ proxmox_object_id }}"
-#     bridge: "vmbr0"
-#     interface: net0
-#     tag: "{{ proxmox_vlan }}"
-
-- name: Update LXC VLAN (not implemented)
+- name: API Endpoint
   ansible.builtin.debug:
     msg: |-
-      "This is not implemented"
-  # when: ansible_role_name in proxmox_debug or "all" in proxmox_debug
+      "https://{{ proxmox_api_endpoint }}:8006/api2/json/nodes/{{ proxmox_primary_node }}/lxc/{{ proxmox_object_id }}/config"
+  when: ansible_role_name in proxmox_debug or "all" in proxmox_debug
+
+- name: Get the current LXC container configuration
+  ansible.builtin.uri:
+    url: "https://{{ proxmox_api_endpoint }}:8006/api2/json/nodes/{{ proxmox_primary_node }}/lxc/{{ proxmox_object_id }}/config"
+    method: GET
+    headers:
+      Authorization: "PVEAPIToken={{ proxmox_api_user }}!{{ proxmox_api_token_id }}={{ proxmox_api_token_secret }}"
+  register: container_config
+
+- name: Endpoint returned
+  ansible.builtin.debug:
+    msg: |-
+      "{{ container_config.json.data | to_nice_json }}"
+  when: ansible_role_name in proxmox_debug or "all" in proxmox_debug
+
+- name: New VLAN
+  ansible.builtin.debug:
+    msg: "{{ proxmox_object_vlan }}"
+  when: ansible_role_name in proxmox_debug or "all" in proxmox_debug
+
+- name: Extract the net0 configuration
+  ansible.builtin.set_fact:
+    net0_config: "{{ container_config.json.data.net0 }}"
+
+- name: Update the VLAN tag in the net0 configuration
+  ansible.builtin.set_fact:
+    updated_net0_config: "{{ net0_config | regex_replace('tag=\\d+', 'tag=' ~ proxmox_object_vlan) }}"
+
+- name: Updated VLAN string
+  ansible.builtin.debug:
+    msg: "{{updated_net0_config}}"
+  when: ansible_role_name in proxmox_debug or "all" in proxmox_debug
+
+- name: API Endpoint
+  ansible.builtin.debug:
+    msg: |-
+      "https://{{ proxmox_api_endpoint }}:8006/api2/json/nodes/{{ proxmox_primary_node }}/lxc/{{ proxmox_object_id }}/config"
+  when: ansible_role_name in proxmox_debug or "all" in proxmox_debug
+
+- name: Update VLAN on the container
+  ansible.builtin.uri:
+    url: "https://{{ proxmox_api_endpoint }}:8006/api2/json/nodes/{{ proxmox_primary_node }}/lxc/{{ proxmox_object_id }}/config"
+    method: PUT
+    headers:
+      Authorization: "PVEAPIToken={{ proxmox_api_user }}!{{ proxmox_api_token_id }}={{ proxmox_api_token_secret }}"
+      Content-Type: "application/json"
+    body: >
+      {
+        "net0": "{{ updated_net0_config }}"
+      }
+    body_format: json
+    validate_certs: false
+  register: update_vlan_result
+
+- name: Endpoint returned
+  ansible.builtin.debug:
+    msg: |-
+      "{{ update_vlan_result.json.data | to_nice_json }}"
+  when: ansible_role_name in proxmox_debug or "all" in proxmox_debug
+
+- name: Display the result of the VLAN update
+  ansible.builtin.debug:
+    var: update_vlan_result.json
