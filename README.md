@@ -1,8 +1,9 @@
 # Ansible Collection - endavis.proxmox
 
 This collection includes roles related to Proxmox:
-- add_disks: add disks to an object
+- add_storage: add disks/mount points to an object
     - requires: proxmox_object_disks
+    - Add mount points for LXC and Disks for VM
 - create: creates an object
     - creates an lxc container if proxmox_object_type is "lxc"
     - creates a qemu VM if proxmox_object_type is "qemu"
