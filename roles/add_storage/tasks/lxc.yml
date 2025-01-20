@@ -1,6 +1,20 @@
 ---
-- name: Add disks to LXC Container (not implemented)
-  ansible.builtin.debug:
-    msg: |-
-      "This is not implemented"
-  # when: ansible_role_name in proxmox_debug or "all" in proxmox_debug
+- name: Add mount points to Proxmox LXC container
+  community.general.proxmox:
+    api_host: "{{ proxmox_api_endpoint }}"
+    api_user: "{{ proxmox_api_user }}"
+    api_token_id: "{{ proxmox_api_token_id }}"
+    api_token_secret: "{{ proxmox_api_token_secret }}"
+    vmid: "{{ proxmox_object_id }}"
+    node: "{{ proxmox_primary_node }}"
+    hostname: "{{ proxmox_object_name }}"
+    update: true
+    mount_volumes:
+      - storage: "{{ disk.storage }}"
+        size: "{{ disk.size }}"
+        mountpoint: "{{ disk.mount_point }}"
+        id: "mp{{ loop_idx }}"
+  loop: "{{ proxmox_object_disks }}"
+  loop_control:
+    loop_var: disk
+    index_var: loop_idx
