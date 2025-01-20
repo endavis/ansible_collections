@@ -1,6 +1,13 @@
 ---
-- name: Update LXC Cores (not implemented)
-  ansible.builtin.debug:
-    msg: |-
-      "This is not implemented"
-  # when: ansible_role_name in proxmox_debug or "all" in proxmox_debug
+# This one works!
+- name: Update memory on a Proxmox LXC Container
+  community.general.proxmox:
+    api_host: "{{ proxmox_api_endpoint }}"
+    api_token_id: "{{ proxmox_api_token_id }}"
+    api_token_secret: "{{ proxmox_api_token_secret }}"
+    api_user: "{{ proxmox_api_user }}"
+    vmid: "{{ proxmox_object_id }}"
+    hostname: "{{ proxmox_object_name }}"
+    node: "{{ proxmox_primary_node }}"
+    cores: "{{ proxmox_object_cores }}"
+    update: true
