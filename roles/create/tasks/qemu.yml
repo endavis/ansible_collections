@@ -1,0 +1,15 @@
+---
+- name: Create Proxmox QEMU VM
+  community.general.proxmox_kvm:
+    api_host: "{{ proxmox_api_endpoint }}"
+    api_token_id: "{{ proxmox_api_token_id }}"
+    api_token_secret: "{{ proxmox_api_token_secret }}"
+    api_user: "{{ proxmox_api_user }}"
+    clone: "{{ proxmox_object_clone_from_name }}"     # Source VM name
+    newid: "{{ proxmox_object_id }}"               # Target VMID for the new VM
+    name: "{{ proxmox_object_name }}"              # Name for the new VM
+    node: "{{ proxmox_primary_node }}"         # Node where the new VM will be created
+    storage: "{{ proxmox_object_target_storage }}"    # Storage for the VM
+    full: true                         # Perform a full clone
+    timeout: 300                       # Optional timeout for the task
+

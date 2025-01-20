@@ -1,0 +1,87 @@
+---
+- name: Debug API Endpoint
+  ansible.builtin.debug:
+    msg: |-
+      "https://{{ proxmox_api_endpoint }}:8006/api2/json/cluster/resources?type=vm"
+  when: ansible_role_name in proxmox_debug or "all" in proxmox_debug
+
+- name: Retrieve cluster resources from Proxmox
+  ansible.builtin.uri:
+    url: "https://{{ proxmox_api_endpoint }}:8006/api2/json/cluster/resources?type=vm"
+    method: GET
+    headers:
+      Authorization: "PVEAPIToken={{ proxmox_api_user }}!{{ proxmox_api_token_id }}={{ proxmox_api_token_secret }}"
+  register: proxmox_resources
+
+- name: Print the cluster resources returned
+  ansible.builtin.debug:
+    msg: |-
+      "{{ proxmox_resources.json.data | to_nice_json }}"
+  when: ansible_role_name in proxmox_debug or "all" in proxmox_debug
+
+- name: Find the object with the specified vmid
+  set_fact:
+    proxmox_object: >-
+      {{
+        proxmox_resources.json.data | selectattr('vmid', 'equalto', proxmox_object_id | int) | first | default({})
+      }}
+
+- name: Check if the object exists
+  set_fact:
+    proxmox_object_exists: "{{ proxmox_object != {} }}"
+
+- name: Set proxmox_primary_node for the found object
+  set_fact:
+    proxmox_primary_node: "{{ proxmox_object.node }}"
+  when: proxmox_object_exists
+
+# - name: Set proxmox_primary_node to Unknown
+#   set_fact:
+#     proxmox_primary_node: "Unknown"
+#   when: not proxmox_object_exists
+
+- name: Set proxmox_object_is_container based on the object's type
+  set_fact:
+    proxmox_object_type: "{{ proxmox_object.type }}"
+  when: proxmox_object_exists
+
+# - name: Set proxmox_object_type to Unknown
+#   set_fact:
+#     proxmox_object_type: "Unknown"
+#   when: not proxmox_object_exists
+
+- name: Set proxmox_object_name to the name of the found object
+  set_fact:
+    proxmox_object_name: "{{ proxmox_object.name }}"
+  when: proxmox_object_exists
+
+# - name: Set proxmox_object_name to the name of the found object
+#   set_fact:
+#     proxmox_object_name: "Unknown"
+#   when: not proxmox_object_exists
+
+- name: Set proxmox_object_status to the name of the found object
+  set_fact:
+    proxmox_object_status: "{{ proxmox_object.status }}"
+  when: proxmox_object_exists
+
+- name: Set proxmox_object_status to the name of the found object
+  set_fact:
+    proxmox_object_status: "Unknown"
+  when: not proxmox_object_exists
+
+- name: Object found
+  ansible.builtin.debug:
+    msg: |-
+      "ID   : {{ proxmox_object_id }}"
+      "Node : {{ proxmox_primary_node }}"
+      "Name : {{ proxmox_object_name }}"
+      "Type : {{ proxmox_object_type }}"
+  when: proxmox_object_exists and (ansible_role_name in proxmox_debug or "all" in proxmox_debug)
+
+- name: Object not found
+  ansible.builtin.debug:
+    msg: |-
+      "Object with ID {{ proxmox_object_id }} was not found"
+  when: not proxmox_object_exists and (ansible_role_name in proxmox_debug or "all" in proxmox_debug)
+

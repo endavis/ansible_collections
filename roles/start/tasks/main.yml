@@ -1,0 +1,7 @@
+---
+- name: Start or restart the object
+  ansible.builtin.include_tasks: "{{ proxmox_object_type }}.yml"
+
+- name: Pause for 20 seconds while object comes up
+  ansible.builtin.pause:
+    seconds: 20

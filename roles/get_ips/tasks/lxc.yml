@@ -1,0 +1,37 @@
+---
+- name: API Endpoint
+  ansible.builtin.debug:
+    msg: |-
+      "https://{{ proxmox_api_endpoint }}:8006/api2/json/nodes/{{ proxmox_primary_node }}/lxc/{{ proxmox_object_id }}/interfaces"
+  when: ansible_role_name in proxmox_debug or "all" in proxmox_debug
+
+- name: Get Proxmox LXC network details
+  uri:
+    url: "https://{{ proxmox_api_endpoint }}:8006/api2/json/nodes/{{ proxmox_primary_node }}/lxc/{{ proxmox_object_id }}/interfaces"
+    method: GET
+    headers:
+      Authorization: "PVEAPIToken={{ proxmox_api_user }}!{{ proxmox_api_token_id }}={{ proxmox_api_token_secret }}"
+  register: proxmox_lxc_network_details
+
+- name: Endpoint returned
+  ansible.builtin.debug:
+    msg: |-
+      "{{ proxmox_lxc_network_details.json.data | to_nice_json }}"
+  when: ansible_role_name in proxmox_debug or "all" in proxmox_debug
+
+- name: Extract IPv4 addresses into proxmox_object_ips
+  vars:
+    inet_values: >-
+      {{
+        proxmox_lxc_network_details.json.data
+        | rejectattr('name', 'equalto', 'lo')
+        | map(attribute='inet')
+      }}
+  set_fact:
+    proxmox_object_ips: >-
+      {{
+        inet_values
+        | map('regex_replace', '/.*$', '')
+        | select('defined')
+        | list
+      }}

@@ -1,0 +1,15 @@
+# This one works!
+- name: Create new disks
+  community.general.proxmox_disk:
+    api_host: "{{ proxmox_api_endpoint }}"
+    api_token_id: "{{ proxmox_api_token_id }}"
+    api_token_secret: "{{ proxmox_api_token_secret }}"
+    api_user: "{{ proxmox_api_user }}"
+    disk: "{{ disk.disk_id }}"
+    vmid: "{{ proxmox_object_id }}"              # VMID of the virtual machine
+    storage: "{{ disk.storage }}"  # Storage location for the disk
+    size: "{{ disk.size }}"       # Size of the disk in GB
+    state: present
+  loop: "{{ proxmox_object_disks }}"
+  loop_control:
+    loop_var: disk

@@ -1,0 +1,21 @@
+---
+# This one works!
+- name: Restart container
+  community.general.proxmox:
+    api_host: "{{ proxmox_api_endpoint }}"
+    api_token_id: "{{ proxmox_api_token_id }}"
+    api_token_secret: "{{ proxmox_api_token_secret }}"
+    api_user: "{{ proxmox_api_user }}"
+    vmid: "{{ proxmox_object_id}}"
+    state: "restarted"
+  when: proxmox_object_status == "running"
+
+- name: Start container
+  community.general.proxmox:
+    api_host: "{{ proxmox_api_endpoint }}"
+    api_token_id: "{{ proxmox_api_token_id }}"
+    api_token_secret: "{{ proxmox_api_token_secret }}"
+    api_user: "{{ proxmox_api_user }}"
+    vmid: "{{ proxmox_object_id }}"
+    state: "started"
+  when: proxmox_object_status == "stopped"

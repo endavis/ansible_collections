@@ -1,0 +1,6 @@
+---
+- name: Update LXC Cores (not implemented)
+  ansible.builtin.debug:
+    msg: |-
+      "This is not implemented"
+  # when: ansible_role_name in proxmox_debug or "all" in proxmox_debug

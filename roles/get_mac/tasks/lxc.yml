@@ -1,0 +1,33 @@
+---
+- name: Debug API Endpoint
+  ansible.builtin.debug:
+    msg: >
+      "https://{{ proxmox_api_endpoint }}:8006/api2/json/nodes/{{ proxmox_primary_node }}/lxc/{{ proxmox_object_id }}/interfaces"
+  when: ansible_role_name in proxmox_debug or "all" in proxmox_debug
+
+- name: Get Proxmox LXC network details
+  uri:
+    url: "https://{{ proxmox_api_endpoint }}:8006/api2/json/nodes/{{ proxmox_primary_node }}/lxc/{{ proxmox_object_id }}/interfaces"
+    method: GET
+    headers:
+      Authorization: "PVEAPIToken={{ proxmox_api_user }}!{{ proxmox_api_token_id }}={{ proxmox_api_token_secret }}"
+  register: proxmox_lxc_interfaces
+
+- name: Endpoint returned
+  ansible.builtin.debug:
+    msg: |-
+      "{{ proxmox_lxc_interfaces.json.data | to_nice_json }}"
+  when: ansible_role_name in proxmox_debug or "all" in proxmox_debug
+
+- name: Extract MAC address of eth0
+  vars:
+    mac_values: >-
+      {{
+        proxmox_lxc_interfaces.json.data
+        | rejectattr('name', 'equalto', 'lo')
+        | map(attribute='hwaddr')
+        | select('defined')
+        | list
+      }}
+  set_fact:
+    proxmox_mac: "{{ mac_values[0] | default('MAC address not found') }}"

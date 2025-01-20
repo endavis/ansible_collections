@@ -1,0 +1,41 @@
+---
+- name: Debug API Endpoint
+  ansible.builtin.debug:
+    msg: >
+      "https://{{ proxmox_api_endpoint }}:8006/api2/json/nodes/{{ proxmox_primary_node }}/qemu/{{ proxmox_object_id }}/agent/network-get-interfaces"
+  when: ansible_role_name in proxmox_debug or "all" in proxmox_debug
+
+- name: Get Proxmox QEMU VM Details
+  block:
+    - name: Call API
+      uri:
+        url: "https://{{ proxmox_api_endpoint }}:8006/api2/json/nodes/{{ proxmox_primary_node }}/qemu/{{ proxmox_object_id }}/agent/network-get-interfaces"
+        method: GET
+        headers:
+          Authorization: "PVEAPIToken={{ proxmox_api_user }}!{{ proxmox_api_token_id }}={{ proxmox_api_token_secret }}"
+      register: proxmox_vm_network_details
+
+    - name: Endpoint returned
+      ansible.builtin.debug:
+        msg: |-
+          "{{ proxmox_vm_network_details.json.data.result | to_nice_json }}"
+      when: ansible_role_name in proxmox_debug or "all" in proxmox_debug
+
+    - name: Extract IPv4 addresses into proxmox_object_ips
+      set_fact:
+        proxmox_object_ips: >-
+          {{
+            proxmox_vm_network_details.json.data.result
+            | map(attribute='ip-addresses')
+            | flatten
+            | selectattr('ip-address-type', 'equalto', 'ipv4')
+            | selectattr('ip-address', '!=', '127.0.0.1')
+            | map(attribute='ip-address')
+            | list
+          }}
+
+  rescue:
+    - name: Set IPs to Unknown (proxmox_object_ips and proxmox_object_ip) (could not get IPs, likely no qemu-guest-agent)
+      set_fact:
+        proxmox_object_ips:
+          - "Unknown"

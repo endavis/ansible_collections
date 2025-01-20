@@ -1,0 +1,35 @@
+    # proxmox credentials
+    proxmox_api_endpoint: "proxmox_endpoint"
+    proxmox_api_token_id: "proxmox_api_token_id"
+    proxmox_api_token_secret: "proxmox_api_token_secret"
+    proxmox_api_user: "root@pam"
+
+    # the DNS domain that the environment exists in
+    proxmox_dns_domain: "endavis.net"
+
+    # the nodes in the environment
+    proxmox_primary_node: "pve1"
+    proxmox_secondary_nodes:
+      - "pve2"
+      - "pve3"
+
+    # related to the object being targeted
+    proxmox_object_id: 850
+    proxmox_object_type: "qemu" # qemu or lxc
+    proxmox_object_name: "testvm"
+
+    # related to creating an object
+    proxmox_object_memory: 8192
+    proxmox_object_cores: 4
+    proxmox_object_target_storage: "share01"
+    proxmox_object_clone_id: 108
+    proxmox_object_clone_from_name: "template-vm-ubuntu2410"
+    proxmox_object_vlan: 40
+    proxmox_object_ha_group: "all"
+    proxmox_object_disks:
+      - size: 10
+        storage: "share01"
+        disk_id: "scsi3"
+
+    proxmox_debug:
+      - "none" # can be a list of roles or "all" or "none"

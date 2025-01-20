@@ -1,0 +1,37 @@
+---
+# This one works!
+# - name: Create VM
+#   community.general.proxmox_kvm:
+#     api_host: "{{ proxmox_api_endpoint }}"
+#     api_token_id: "{{ proxmox_api_token_id }}"
+#     api_token_secret: "{{ proxmox_api_token_secret }}"
+#     api_user: "{{ proxmox_api_user }}"
+#     clone: "{{ proxmox_clone_from_name }}"     # Source VM name
+#     newid: "{{ proxmox_object_id }}"               # Target VMID for the new VM
+#     name: "{{ proxmox_object_name }}"              # Name for the new VM
+#     node: "{{ proxmox_primary_node }}"         # Node where the new VM will be created
+#     storage: "{{ proxmox_target_storage }}"    # Storage for the VM
+#     full: true                         # Perform a full clone
+#     timeout: 300                       # Optional timeout for the task
+
+# - name: Pause for 30 seconds while VM is created
+#   ansible.builtin.pause:
+#     seconds: 30
+
+# - name: Update Proxmox VM memory and cores
+#   community.general.proxmox:
+#     api_host: "{{ proxmox_api_endpoint }}"
+#     api_token_id: "{{ proxmox_api_token_id }}"
+#     api_token_secret: "{{ proxmox_api_token_secret }}"
+#     api_user: "{{ proxmox_api_user }}"
+#     vmid: "{{ proxmox_object_id }}"
+#     node: "{{ proxmox_primary_node }}"
+#     memory: "{{ proxmox_object_memory }}"
+#     cores: "{{ proxmox_object_cores }}"
+#     update: true
+
+- name: Create LXC container
+  ansible.builtin.debug:
+    msg: |-
+      "This is not implemented"
+  # when: ansible_role_name in proxmox_debug or "all" in proxmox_debug

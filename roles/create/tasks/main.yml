@@ -1,0 +1,9 @@
+---
+- name: Create the object
+  ansible.builtin.include_tasks: "{{ proxmox_object_type }}.yml"
+  when: not proxmox_object_exists
+
+- name: Pause for 15 seconds after object is created
+  ansible.builtin.pause:
+    seconds: 15
+  when: not proxmox_object_exists

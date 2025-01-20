@@ -1,0 +1,20 @@
+---
+- name: Set MAC to "Unknown" (proxmox_mac) (object was not found)
+  set_fact:
+    proxmox_mac: "Unknown"
+  when: not proxmox_object_exists
+
+- name: Set MAC to "Unknown" (proxmox_mac) (object is not running)
+  set_fact:
+    proxmox_mac: "Unknown"
+  when: proxmox_object_exists and proxmox_object_status != "running"
+
+- name: Get MAC Address (proxmox_mac)
+  ansible.builtin.include_tasks: "{{ proxmox_object_type }}.yml"
+  when: proxmox_object_status == "running" and proxmox_object_exists
+
+- name: Object MAC Address Results
+  ansible.builtin.debug:
+    msg: >
+      "Extracted MAC Address: {{ proxmox_mac }}"
+  when: ansible_role_name in proxmox_debug or "all" in proxmox_debug

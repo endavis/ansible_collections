@@ -1,0 +1,5 @@
+---
+- name: Add disks
+  ansible.builtin.include_tasks: "{{ proxmox_object_type }}.yml"
+  when: proxmox_object_exists
+

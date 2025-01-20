@@ -1,0 +1,28 @@
+---
+- name: Set IPs to "Unknown" (proxmox_object_ips and proxmox_object_ip) (object was not found)
+  set_fact:
+    proxmox_object_ips:
+      - "Unknown"
+  when: not proxmox_object_exists
+
+- name: Set IPs to "Unknown" (proxmox_object_ips and proxmox_object_ip) (object is not running)
+  set_fact:
+    proxmox_object_ips:
+      - "Unknown"
+  when: proxmox_object_exists and proxmox_object_status != "running"
+
+- name: Get the IPv4 Addresses
+  ansible.builtin.include_tasks: "{{ proxmox_object_type }}.yml"
+  when: proxmox_object_status == "running" and proxmox_object_exists
+
+- name: Set the proxmox_object_ip to the first IP
+  set_fact:
+    proxmox_object_ip: "{{ proxmox_object_ips[0] | default('No valid IP found') }}"
+
+- name: Object IP results
+  ansible.builtin.debug:
+    msg: |-
+      "ID  : {{ proxmox_object_id }}"
+      "IPs : {{ proxmox_object_ips }}"
+      "IP  : {{ proxmox_object_ip }}"
+  when: ansible_role_name in proxmox_debug or "all" in proxmox_debug
