@@ -51,7 +51,7 @@
       - "find"            # find the object again (to refresh info if the object was just created)
       - "update_memory"   # update the memory
       - "update_cores"    # update the cores
-      - "add_disks"       # add disks
+      - "add_storage"     # add storage
       - "update_vlan"     # update the VLAN
       - "start"           # start the object
       - "find"            # find the object again (to refresh info if the object was just started)
