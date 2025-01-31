@@ -1,0 +1,12 @@
+---
+linuxuser_name: "-default_user-"
+linuxuser_idnum: "1000" # or "default" to use the next available UID
+linuxuser_shell: "/bin/bash"
+linuxuser_skel: "/etc/skel"
+linuxuser_exists: false # can explicitly set to true or use the find role to check
+linuxuser_create_home: true
+linuxuser_sudo: false  # Default: no sudo access
+linuxuser_sudo_no_password: false  # Default: requires password for sudo
+linuxuser_ps1_prompt: '[\[\e[01;35m\]\d\[\e[m\] \[\e[01;35m\]\t\[\e[m\]] ${debian_chroot:+($debian_chroot)} \[\e[01;32m\]\u\[\e[m\]@\[\e[01;32m\]\h\[\e[m\] \s \[\e[01;34m\]\w\[\e[m\]\n \\$ '
+linuxuser_ssh_pub_key: "{{ linux_user_name }}_id_rsa.pub"
+linuxuser_aliases_file: "bash_aliases"

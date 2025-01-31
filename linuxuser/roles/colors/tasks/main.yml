@@ -1,0 +1,19 @@
+---
+- name: Ensure linuxuser_name is not the default value
+  ansible.builtin.fail:
+    msg: "The linuxuser_name variable is set to the default value. Please set a valid user."
+  when: linuxuser_name == "-default_user-"
+
+- block:
+  - name: Update LS_COLORS
+    ansible.builtin.blockinfile:
+      path: "/home/{{ linuxuser_name }}/.bashrc"
+      marker: "# {mark} ANSIBLE MANAGED BLOCK LS_COLORS"
+      block: |
+        LS_COLORS="$(vivid generate snazzy)"
+
+      owner: "{{ linuxuser_name }}"
+      group: "{{ linuxuser_name }}"
+      mode: '0644'
+
+  when: linuxuser_name != "-default_user-" and linuxuser_exists

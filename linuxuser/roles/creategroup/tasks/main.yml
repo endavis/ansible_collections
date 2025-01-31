@@ -1,0 +1,13 @@
+---
+- name: Ensure linux_user is not the default value
+  ansible.builtin.fail:
+    msg: "The linuxuser_name variable is set to the default value. Please set a valid user."
+  when: linuxuser_name == "-default_user-"
+
+- block:
+  - name: Add group
+    ansible.builtin.group:
+      name: "{{ linuxuser_name }}"
+      gid: "{{ linuxuser_idnum }}"
+
+  when: linuxuser_name != "-default_user-" and linuxuser_exists

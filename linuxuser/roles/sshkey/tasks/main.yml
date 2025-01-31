@@ -1,0 +1,29 @@
+---
+- name: Ensure linux_user is not the default value
+  ansible.builtin.fail:
+    msg: "The linuxuser_name variable is set to the default value. Please set a valid user."
+  when: linuxuser_name == "-default_user-"
+
+- name: Check if the file exists
+  ansible.builtin.stat:
+    path: "{{ linuxuser_ssh_pub_key }}"
+  register: pub_key_status
+  delegate_to: localhost
+
+- name: Check if SSH public key variable exists and file is valid
+  ansible.builtin.debug:
+    msg: "SSH public key exists: {{ pub_key_status.stat.exists }}"
+  when: ansible_role_name in linuxuser_debug or "all" in linuxuser_debug
+
+- block:
+  - name: Read the SSH public key
+    ansible.builtin.set_fact:
+      linuxuser_ssh_key_content: "{{ lookup('file', linuxuser_ssh_pub_key) }}"
+
+  - name: Add SSH public key to authorized_keys
+    ansible.builtin.authorized_key:
+      user: "{{ linuxuser_name }}"
+      key: "{{ linuxuser_ssh_key_content }}"
+      state: present
+
+  when: linuxuser_name != "-default_user-" and linuxuser_exists and pub_key_status.stat.exists

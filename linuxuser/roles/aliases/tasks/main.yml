@@ -1,0 +1,35 @@
+---
+- name: Ensure linuxuser_name is not the default value
+  ansible.builtin.fail:
+    msg: "The linuxuser_name variable is set to the default value. Please set a valid user."
+  when: linuxuser_name == "-default_user-"
+
+- name: Check if the file exists
+  ansible.builtin.stat:
+    path: "{{ linuxuser_aliases_file }}"
+  register: alias_status
+  delegate_to: localhost
+
+- name: Check if bash_aliases exists
+  ansible.builtin.debug:
+    msg: "bash_aliases exists: {{ alias_status.stat.exists }}"
+  when: ansible_role_name in linuxuser_debug or "all" in linuxuser_debug
+
+- block:
+  - name: Read the bash_aliases file
+    ansible.builtin.set_fact:
+      linuxuser_bash_aliases_content: "{{ lookup('file', linuxuser_aliases_file) }}"
+
+  - name: Append bash_aliases to user's .bash_aliases
+    ansible.builtin.blockinfile:
+      path: "/home/{{ linuxuser_name }}/.bash_aliases"
+      create: true
+      marker: "# {mark} ANSIBLE MANAGED BLOCK bash_aliases"
+      block: |
+        {{ linuxuser_bash_aliases_content }}
+
+      owner: "{{ linuxuser_name }}"
+      group: "{{ linuxuser_name }}"
+      mode: '0644'
+
+  when: linuxuser_name != "-default_user-" and linuxuser_exists and alias_status.stat.exists

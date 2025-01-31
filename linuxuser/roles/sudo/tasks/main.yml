@@ -1,0 +1,19 @@
+---
+- name: Ensure linux_user is not the default value
+  ansible.builtin.fail:
+    msg: "The linuxuser_name variable is set to the default value. Please set a valid user."
+  when: linuxuser_name == "-default_user-"
+
+- block:
+  - name: Create a sudoers file if sudo is true
+    ansible.builtin.copy:
+      dest: "/etc/sudoers.d/{{ linuxuser_name }}"
+      content: |
+        {{ linuxuser_name }} ALL=(ALL) {{ 'NOPASSWD: ALL' if linuxuser_sudo_no_password else 'ALL' }}
+      owner: root
+      group: root
+      mode: '0440'
+    when: linuxuser_sudo | bool
+    notify: Validate sudoers file
+
+  when: linuxuser_name != "-default_user-" and linuxuser_exists

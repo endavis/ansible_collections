@@ -1,0 +1,8 @@
+---
+- block:
+  - name: Validate sudoers file
+    ansible.builtin.command:
+      cmd: visudo -cf /etc/sudoers.d/{{ linuxuser_name }}
+    ignore_errors: false
+
+  become: true

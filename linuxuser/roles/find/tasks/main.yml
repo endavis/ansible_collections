@@ -1,0 +1,99 @@
+---
+- name: Ensure linux_user is not the default value
+  ansible.builtin.fail:
+    msg: "The linuxuser_name variable is set to the default value. Please set a valid user."
+  when: linuxuser_name == "-default_user-"
+
+- name: Find Linux user details
+  block:
+    - name: Check if the Linux user exists
+      ansible.builtin.getent:
+        database: passwd
+        key: "{{ linuxuser_name }}"
+      register: linuxuser_entry
+      changed_when: false
+
+    - name: Set linuxuser_exists to true if user is found
+      ansible.builtin.set_fact:
+        linuxuser_exists: "{{ linuxuser_entry.ansible_facts.getent_passwd is defined and linuxuser_name in linuxuser_entry.ansible_facts.getent_passwd }}"
+
+    - name: Debug primary group
+      ansible.builtin.debug:
+        msg: "{{ linuxuser_entry.ansible_facts.getent_passwd[linuxuser_name] }}"
+      when: linuxuser_exists and (ansible_role_name in linuxuser_debug or "all" in linuxuser_debug)
+
+    - name: Get primary Group
+      ansible.builtin.set_fact:
+        linuxuser_primary_group_id: "{{ linuxuser_entry.ansible_facts.getent_passwd[linuxuser_name][2] }}"
+      when: linuxuser_exists
+
+    - name: Gather detailed group information
+      ansible.builtin.getent:
+        database: group
+      register: linuxuser_groups_data
+      when: linuxuser_exists
+
+    - name: Debug group information
+      ansible.builtin.debug:
+        msg: "{{ linuxuser_groups_data }}"
+      when: linuxuser_exists and (ansible_role_name in linuxuser_debug or "all" in linuxuser_debug)
+
+    - name: Find the group name by GID
+      ansible.builtin.set_fact:
+        linuxuser_primary_group_name: >-
+          {{
+            linuxuser_groups_data.ansible_facts.getent_group
+            | dict2items
+            | selectattr('value.1', 'equalto', linuxuser_primary_group_id | string)
+            | map(attribute='key')
+            | first()
+            | default('unknown')
+          }}
+
+    - name: Get additional group memberships for the user
+      ansible.builtin.set_fact:
+        linuxuser_groups: >-
+          {{
+            linuxuser_groups_data.ansible_facts.getent_group
+            | dict2items
+            | selectattr('value.2', 'search', linuxuser_name)
+            | map(attribute='key')
+            | list
+          }}
+      when: linuxuser_exists
+
+    - name: Parse and set user details
+      ansible.builtin.set_fact:
+        linuxuser_details: >
+          {
+            "uid": "{{ linuxuser_entry.ansible_facts.getent_passwd[linuxuser_name][2] }}",
+            "gid": "{{ linuxuser_entry.ansible_facts.getent_passwd[linuxuser_name][3] }}",
+            "primary_group_id": "{{ linuxuser_primary_group_id }}",
+            "primary_group_name": "{{ linuxuser_primary_group_name }}",
+            "groups": "{{ linuxuser_groups | difference([linuxuser_primary_group_id]) }}",
+            "home_directory": "{{ linuxuser_entry.ansible_facts.getent_passwd[linuxuser_name][4] }}",
+            "shell": "{{ linuxuser_entry.ansible_facts.getent_passwd[linuxuser_name][5] }}"
+          }
+      when: linuxuser_exists
+
+    - name: Display user information if the user exists
+      ansible.builtin.debug:
+        msg:
+          - "Name: {{ linuxuser_name }}"
+          - "Exists: {{ linuxuser_exists }}"
+          - "UID: {{ linuxuser_details.uid }}"
+          - "Primary Group: {{ linuxuser_details.primary_group_name }}({{linuxuser_details.primary_group_id }})"
+          - "Additional Groups: {{ linuxuser_details.groups | join(', ') }}"
+          - "Home Directory: {{ linuxuser_details.home_directory }}"
+          - "Shell: {{ linuxuser_details.shell }}"
+      when: linuxuser_exists and (ansible_role_name in linuxuser_debug or "all" in linuxuser_debug)
+
+  rescue:
+    - name: Set linuxuser_exists to false
+      ansible.builtin.set_fact:
+        linuxuser_exists: false
+
+    - name: Display message if the user does not exist
+      ansible.builtin.debug:
+        msg: "The user {{ linuxuser_name }} does not exist."
+      when: (not linuxuser_exists) and (ansible_role_name in linuxuser_debug or "all" in linuxuser_debug)
