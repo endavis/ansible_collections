@@ -18,18 +18,39 @@
     proxmox_object_type: "" # qemu or lxc
     proxmox_object_name: ""
 
-    # related to creating an object
+    # clone from a already existing vm/lxc object
+    proxmox_object_clone_from_id: -1
+    proxmox_object_clone_from_name: ""
+    proxmox_object_target_storage: ""
+
+    # related to creating a lxc container from scratch
+    proxmox_lxc_template_name: ""
+    proxmox_lxc_template_storage: ""
+    proxmox_object_root_password: ""
+    proxmox_object_root_ssh_key: ""
+    proxmox_object_root_disk_storage: ""
+    proxmox_object_root_disk_size: 20
+
+    # shared creation attributes
     proxmox_object_memory: 8192
+    proxmox_object_swap_memory: 1024 # swap memory in MB
     proxmox_object_cores: 4
-    proxmox_object_target_storage: "share01"
-    proxmox_object_clone_from_id: 108
-    proxmox_object_clone_from_name: "template-vm-ubuntu2410"
     proxmox_object_vlan: 40
-    proxmox_object_ha_group: "all"
+
+    # network settings
+    proxmox_object_ipv4: "" # dhcp or static
+    proxmox_object_ipv6: "" # dhcp or static or auto
+    proxmox_object_nic_bridge: "vmbr0"
+    proxmox_object_nic_name: "eth0"
+
+    # Create extra disks, used with add_storage role
     proxmox_object_disks:
       - size: 10
         storage: "share01"
         disk_id: "scsi3"
+
+    # HA settings (currently not implemented)
+    proxmox_object_ha_group: "all"
 
     proxmox_debug:
       - "none" # can be a list of roles or "all" or "none"
