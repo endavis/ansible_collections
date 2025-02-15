@@ -1,0 +1,14 @@
+---
+- name: Reboot the server
+  block:
+    - name: Reboot the server
+      ansible.builtin.reboot:
+        reboot_timeout: 60
+        pre_reboot_delay: 5
+        test_command: uptime
+
+  rescue:
+    - name: Wait for the server to come back online
+      ansible.builtin.wait_for_connection:
+        delay: 10
+        timeout: 60

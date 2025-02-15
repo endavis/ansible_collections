@@ -1,0 +1,24 @@
+---
+- name: Check if /etc/.pve-ignore.hosts exists
+  ansible.builtin.stat:
+    path: /etc/.pve-ignore.hosts
+  register: pve_ignore_hosts
+
+- name: Add the .pve-ignore.hosts file
+  ansible.builtin.file:
+    path: /etc/.pve-ignore.hosts
+    state: touch
+    mode: u=rw,g=r,o=r
+  when: not pve_ignore_hosts.stat.exists
+
+- name: Check if /etc/.pve-ignore.resolv.conf exists
+  ansible.builtin.stat:
+    path: /etc/.pve-ignore.resolv.conf
+  register: pve_ignore_resolv_conf
+
+- name: Add the .pve-ignore.resolv.conf file
+  ansible.builtin.file:
+    path: /etc/.pve-ignore.resolv.conf
+    state: touch
+    mode: u=rw,g=r,o=r
+  when: not pve_ignore_resolv_conf.stat.exists

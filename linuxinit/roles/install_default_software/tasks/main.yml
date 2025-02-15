@@ -1,0 +1,23 @@
+---
+- block:
+  - name: Update package list
+    apt:
+      update_cache: yes
+
+  - name: Install new packages
+    apt:
+      name:
+        - vim
+        - eza
+        - wget
+        - bat
+        - vivid
+        - python3-pip
+      state: present
+
+  - name: Remove vim-tiny
+    apt:
+      name: vim-tiny
+      state: absent
+
+  become: true

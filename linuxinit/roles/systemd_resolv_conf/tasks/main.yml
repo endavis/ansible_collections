@@ -1,0 +1,12 @@
+---
+- name: Check if /etc/resolv.conf is managed by systemd-resolved
+  ansible.builtin.shell: "head -n 1 /etc/resolv.conf | grep -q '^# This is /run/systemd/resolve/stub-resolv.conf managed by man\\:systemd-resolved(8).$'"
+  register: resolv_conf_check
+  changed_when: false
+  failed_when: false
+
+- name: Remove /etc/resolv.conf if it is not managed by systemd-resolved
+  ansible.builtin.file:
+    path: /etc/resolv.conf
+    state: absent
+  when: resolv_conf_check.rc != 0

@@ -1,0 +1,28 @@
+---
+- name: Disable empty password login
+  lineinfile:
+    dest: "{{ linuxinit_sshd_config_file }}"
+    regexp: '^#?PermitEmptyPasswords'
+    line: 'PermitEmptyPasswords no'
+  notify: restart sshd
+
+- name: Disable remote root login
+  lineinfile:
+    dest: "{{ linuxinit_sshd_config_file }}"
+    regexp: '^#?PermitRootLogin'
+    line: 'PermitRootLogin no'
+  notify: restart sshd
+
+- name: Disable password login
+  lineinfile:
+    dest: "{{ linuxinit_sshd_config_file }}"
+    regexp: '^(#\s*)?PasswordAuthentication '
+    line: 'PasswordAuthentication no'
+  notify: restart sshd
+
+- name: Enable PAM
+  lineinfile:
+    dest: "{{ linuxinit_sshd_config_file }}"
+    regexp: '^#?UsePAM'
+    line: 'UsePAM yes'
+  notify: restart sshd

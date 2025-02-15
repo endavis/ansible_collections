@@ -1,0 +1,6 @@
+---
+linuxinit_sshd_config_file: "/etc/ssh/sshd_config"
+linuxinit_sshd_service: sshd
+
+linuxinit_debug:
+  - "none" # can be a list of roles or "all" or "none"

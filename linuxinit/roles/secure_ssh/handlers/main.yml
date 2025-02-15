@@ -1,0 +1,3 @@
+---
+- name: restart sshd
+  service: name={{ linuxinit_sshd_service }} state=restarted

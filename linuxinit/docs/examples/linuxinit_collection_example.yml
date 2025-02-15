@@ -1,0 +1,83 @@
+---
+- name: Initialize a Linux QEMU/LXC object in Proxmox
+  hosts: all
+
+  vars_files:
+    - ~/ansible/vault/proxmoxsecrets.yml # this is a vault file with the below
+    # creds_proxmox_user: "root@pam"
+    # creds_proxmox_api_token_id: "token_id"
+    # creds_proxmox_api_token_secret: "token_secret"
+    # creds_proxmox_api_endpoint: "endpoint.domain.net"
+
+  vars:
+    # proxmox credentials
+    proxmox_api_endpoint: "{{ creds_proxmox_api_endpoint }}"
+    proxmox_api_token_id: "{{ creds_proxmox_api_token_id }}"
+    proxmox_api_token_secret: "{{ creds_proxmox_api_token_secret }}"
+    proxmox_api_user: "{{ creds_proxmox_user}}"
+
+    # the DNS domain that the environment exists in
+    proxmox_dns_domain: "domain.net"
+
+    # the nodes in the environment
+    proxmox_primary_node: "pve1"
+    proxmox_secondary_nodes:
+      - "pve2"
+      - "pve3"
+
+    # related to the object being targeted
+    proxmox_object_id: 850
+    proxmox_object_type: "qemu"
+    proxmox_object_name: "testplaybook"
+
+    # related to creating an object
+    proxmox_object_memory: 8192
+    proxmox_object_cores: 4
+    proxmox_object_target_storage: "share01"
+    proxmox_object_clone_from_id: 108
+    proxmox_object_clone_from_name: "template-vm-ubuntu2410"
+    proxmox_object_vlan: 40
+    proxmox_object_ha_group: "all"
+    proxmox_object_disks:
+      - size: 10
+        storage: "share01"
+        disk_id: "scsi3"
+
+    # list of actions to perform on the object (based on role name)
+    proxmox_object_actions:
+      - "find"            # find the object
+      - "create"          # create the object (only happens if the object does not exist)
+      - "find"            # find the object again (to refresh info if the object was just created)
+      - "update_memory"   # update the memory
+      - "update_cores"    # update the cores
+      - "add_storage"     # add storage
+      - "update_vlan"     # update the VLAN
+      - "start"           # start the object
+      - "find"            # find the object again (to refresh info if the object was just started)
+      - "get_ips"         # get the IPs
+      - "get_mac"         # get the MAC address
+
+    proxmox_debug:
+      - "none" # can be a list of roles or "all" or "none"
+
+  tasks:
+    - name: Call Roles
+      include_role:
+        name: "endavis.proxmox.{{ proxmox_role_name }}"
+      loop: "{{ proxmox_object_actions }}"
+      loop_control:
+        loop_var: proxmox_role_name
+
+    - name: Show all VM details found
+      debug:
+        msg: |-
+          "ID     : {{ proxmox_object_id }}"
+          "Exists : {{ proxmox_object_exists }}"
+          "VM     : {{ proxmox_object_name if proxmox_object_exists else 'Unknown' }}"
+          "Type   : {{ proxmox_object_type if proxmox_object_exists else 'Unknown' }}"
+          "Status : {{ proxmox_object_status if proxmox_object_exists else 'Unknown' }}"
+          "Node   : {{ proxmox_primary_node if proxmox_object_exists else 'Unknown' }}"
+          "IPs    : {{ proxmox_object_ips if proxmox_object_exists else 'Unknown' }}"
+          "IP     : {{ proxmox_object_ip if proxmox_object_exists else 'Unknown' }}"
+          "MAC    : {{ proxmox_mac if proxmox_object_exists else 'Unknown' }}"
+
