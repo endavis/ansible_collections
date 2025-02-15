@@ -26,6 +26,15 @@
         proxmox_resources.json.data | selectattr('vmid', 'equalto', proxmox_object_id | int) | first | default({})
       }}
 
+- block:
+  - name: Find the object with the specified name
+    set_fact:
+      proxmox_object: >-
+        {{
+          proxmox_resources.json.data | selectattr('name', 'equalto', proxmox_object_name ) | first | default({})
+        }}
+  when: not proxmox_object
+
 - name: Check if the object exists
   set_fact:
     proxmox_object_exists: "{{ proxmox_object != {} }}"
@@ -43,6 +52,16 @@
 - name: Set proxmox_object_is_container based on the object's type
   set_fact:
     proxmox_object_type: "{{ proxmox_object.type }}"
+  when: proxmox_object_exists
+
+- name: Set proxmox_object_id based on the object's id
+  set_fact:
+    proxmox_object_id: "{{ proxmox_object.vmid }}"
+  when: proxmox_object_exists
+
+- name: Set proxmox_object_name based on the object's name
+  set_fact:
+    proxmox_object_name: "{{ proxmox_object.name }}"
   when: proxmox_object_exists
 
 # - name: Set proxmox_object_type to Unknown
