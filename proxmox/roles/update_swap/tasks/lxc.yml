@@ -1,0 +1,13 @@
+---
+# This one works!
+- name: Update swap memory on a Proxmox LXC Container
+  community.general.proxmox:
+    api_host: "{{ proxmox_api_endpoint }}"
+    api_token_id: "{{ proxmox_api_token_id }}"
+    api_token_secret: "{{ proxmox_api_token_secret }}"
+    api_user: "{{ proxmox_api_user }}"
+    vmid: "{{ proxmox_object_id }}"
+    hostname: "{{ proxmox_object_name }}"
+    node: "{{ proxmox_primary_node }}"
+    swap: "{{ proxmox_object_swap_memory }}"
+    update: true
