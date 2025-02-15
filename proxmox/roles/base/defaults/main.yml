@@ -5,7 +5,7 @@
     proxmox_api_user: "root@pam"
 
     # the DNS domain that the environment exists in
-    proxmox_dns_domain: "endavis.net"
+    proxmox_dns_domain: "some.domain"
 
     # the nodes in the environment
     proxmox_primary_node: "pve1"
@@ -14,9 +14,9 @@
       - "pve3"
 
     # related to the object being targeted
-    proxmox_object_id: 850
-    proxmox_object_type: "qemu" # qemu or lxc
-    proxmox_object_name: "testvm"
+    proxmox_object_id: -1
+    proxmox_object_type: "" # qemu or lxc
+    proxmox_object_name: ""
 
     # related to creating an object
     proxmox_object_memory: 8192
