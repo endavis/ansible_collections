@@ -43,7 +43,7 @@ tags: []
 dependencies: {}
 
 # The URL of the originating SCM repository
-repository: https://github.com/endavis/ansible_collections/proxmox
+repository: https://github.com/endavis/ansible_collections/tree/main/proxmox
 
 # The URL to any online docs
 documentation: http://docs.example.com
