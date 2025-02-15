@@ -1,0 +1,39 @@
+---
+- name: Test the linux user collection
+  hosts: 192.168.0.1
+
+  vars_files:
+    - ~/ansible/vault/linuxsecrets.yml # this is a vault file with the below
+    # linux_password_root: "somerootpassword"
+
+  vars:
+    ansible_user: root
+    ansible_password: "{{ linux_password_root }}"
+    linuxuser_name: "ansible"
+    linuxuser_ssh_pub_key: "~/ansible/files/{{ linuxuser_name }}_id_rsa.pub"
+    linuxuser_sudo: true
+    linuxuser_sudo_no_password: true
+    linuxuser_aliases_file: "~/ansible/files/bash_aliases"
+
+    # list of actions to perform on the user (based on role name)
+    linuxuser_actions:
+      - "find"            # find the user
+      - "createuser"      # create the user (only happens if the user does not exist)
+      - "find"            # find the user again (to refresh info if the user was just created)
+      - "sshkey"          # add an ssh key to the user
+      - "sudo"            # add the user to the sudoers file
+      - "prompt"          # update the prompt
+      - "colors"          # update the colors
+      - "aliases"         # add aliases
+
+    linuxuser_debug:
+      - "all" # can be a list of full qualified role names or "all" or "none"
+
+  tasks:
+    - name: Call Roles
+      include_role:
+        name: "endavis.linuxuser.{{ linuxuser_role_name }}"
+      loop: "{{ linuxuser_actions }}"
+      loop_control:
+        loop_var: linuxuser_role_name
+
